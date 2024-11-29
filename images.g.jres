@@ -24,11 +24,6 @@
         "mimeType": "image/x-mkcd-f4",
         "displayName": "myImage"
     },
-    "image8": {
-        "data": "hwQQABAAAAAAAAAAAHd3dwAAAAB3d3d3AAAAcHd3d3cAAAB3d3d3dwAAAHd3d3d3AAAAd3d3d3cAAAB3d3d3dwAAAHd3d3d3AAAAd3d3d3cAAAB3d3d3dwAAAHd3d3d3AAAAd3d3d3cAAAB3d3d3dwAAAHB3d3d3AAAAAHd3d3cAAAAAAHd3dw==",
-        "mimeType": "image/x-mkcd-f4",
-        "displayName": "Sheild"
-    },
     "image9": {
         "data": "hwQQABAAAAAAACAiIgIAIAAgkpk5IwCSAJKZmZk5IpkgmZmZmZlEmSCZmZWZmUSZkplZlZSZRJmSmZmZSZlEmZKZmZlJmUSZkpmZmUmZRJmSmZmZSZlEmZKZWZWUmUSZIJmZlZmZRJkgmZmZmZlEmQAyk5mZmSKZACAyM5MpAJIAACAiIgIAIA==",
         "mimeType": "image/x-mkcd-f4",
@@ -108,6 +103,21 @@
         "data": "hwQEAAUAAAB3dwcAcHcHAAB3BwAAAAcA",
         "mimeType": "image/x-mkcd-f4",
         "displayName": "SheildPart3"
+    },
+    "image8": {
+        "data": "hwQEAAUAAAAAAAcAAHcHAHB3BwB3dwcA",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "SheildLeftUp"
+    },
+    "image21": {
+        "data": "hwQQABAAAAAAAAAAAHd3dwAAAAB3d3d3AAAAcHd3d3cAAAB3d3d3dwAAAHd3d3d3AAAAd3d3d3cAAAB3d3d3dwAAAHd3d3d3AAAAd3d3d3cAAAB3d3d3dwAAAHd3d3d3AAAAd3d3d3cAAAB3d3d3dwAAAHB3d3d3AAAAAHd3d3cAAAAAAHd3dw==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "Sheild1"
+    },
+    "image20": {
+        "data": "hwQEAAUAAAB3dwcAcHcHAAB3BwAAAAcA",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "SheildRightUP"
     },
     "song1": {
         "data": "0078000408030100001c00010a006400f401640000040000000000000000000000000005000004510004000800012708000c00012a0c001000012710001400012414001800021e221c002000011e20002400012424002800012528002c0002242a30003400011e38003c00012040004400012544004800022229",

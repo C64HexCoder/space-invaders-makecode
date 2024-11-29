@@ -3,6 +3,16 @@ namespace SpriteKind {
     export const AlignProjectile = SpriteKind.create()
 }
 sprites.onOverlap(SpriteKind.AlignProjectile, SpriteKind.Sheild, function (sprite, otherSprite) {
+    /*for (let sh = 0; sh <= 2; sh++) {
+        for (let y = 0; y <= 1; y++) {
+            for (let x = 0; x <= 3; x++) {
+                if (ShieldParts[sh][y][x].overlapsWith(sprite)) {
+                    otherSprite.destroy()
+                }
+            }
+        }
+    }*/
+    otherSprite.destroy()
     sprite.startEffect(effects.fire)
     sprite.destroy()
 })
@@ -31,9 +41,9 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
                 sprites.destroy(value)
                 Alians.removeElement(value)
 if (Step > 0) {
-                    Step += 0.05
+                    Step += 0.1
                 } else {
-                    Step += 0 - 0.05
+                    Step += 0 - 0.1
                 }
                 // ProjectilesList.removeElement(project)
                 sprites.destroy(project)
@@ -54,16 +64,46 @@ let Canon: Sprite = null
 let FireSoot = false
 let Step = 0
 let ProjectilesList: Sprite[] = []
+let ShieldParts: Sprite[][][] = []
 let projectile = null
 let Alians: Sprite[] = []
 let selectedAlign = 0
 let list: number[] = []
-let ShieldParts = [[sprites.create(assets.image`SheildPart1`, SpriteKind.Sheild), sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild), sprites.create(assets.image`SheildPart3`, SpriteKind.Player)], [sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild), sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild), sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild)], [sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild), sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild), sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild)]]
+ShieldParts = [[[
+sprites.create(assets.image`SheildLeftUp`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildRightUP`, SpriteKind.Sheild)
+], [
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild)
+]], [[
+sprites.create(assets.image`SheildLeftUp`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildRightUP`, SpriteKind.Sheild)
+], [
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild)
+]], [[
+sprites.create(assets.image`SheildLeftUp`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildRightUP`, SpriteKind.Sheild)
+], [
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild),
+sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild)
+]]]
 let fireRate = 1000
 ProjectilesList = []
 let Align1Images = [assets.image`space invader enemy 0`, assets.image`space invader enemy 1`]
-let Sheilds = [sprites.create(assets.image`Sheild`, SpriteKind.Sheild), sprites.create(assets.image`Sheild`, SpriteKind.Sheild), sprites.create(assets.image`Sheild`, SpriteKind.Sheild)]
-Step = 0.5
+Step = 1
 FireSoot = false
 let Direction = 0.01
 scene.setBackgroundImage(assets.image`background`)
@@ -88,21 +128,24 @@ sprites.create(assets.image`space invader enemy 1`, SpriteKind.Enemy),
 sprites.create(assets.image`space invader enemy 1`, SpriteKind.Enemy)
 ]
 let i = 1
-let y = 1
+let y2 = 1
 for (let align of Alians) {
-    align.setPosition(i * 15, y * 14)
+    align.setPosition(i * 15, y2 * 14)
     i += 1
     if (i > 6) {
         i = 1
-        y += 1
+        y2 += 1
     }
 }
 Canon = sprites.create(assets.image`Canon`, SpriteKind.Player)
 Canon.setPosition(76, 102)
-i = 1
-for (let SheildSprite of Sheilds) {
-    SheildSprite.setPosition(10 + 35 * i, 85)
-    i += 1
+for (let sh2 = 0; sh2 <= 2; sh2++) {
+    for (let y22 = 0; y22 <= 1; y22++) {
+        for (let x2 = 0; x2 <= 3; x2++) {
+            ShieldParts[sh2][y22][x2].x = 25 + 50 * sh2 + x2 * 4
+            ShieldParts[sh2][y22][x2].y = 90 + y22 * 5
+        }
+    }
 }
 info.setScore(0)
 info.setBackgroundColor(0)
@@ -112,12 +155,12 @@ music.play(music.stringPlayable("A F E F D G E F ", 100), music.PlaybackMode.Unt
 game.onUpdate(function () {
     if (controller.left.isPressed()) {
         if (Canon.x > 10) {
-            Canon.x += -1
+            Canon.x += -3
         }
     } else {
         if (controller.right.isPressed()) {
             if (Canon.x < 150) {
-                Canon.x += 1
+                Canon.x += 3
             }
         }
     }
@@ -136,7 +179,7 @@ game.onUpdate(function () {
         Step = Step * -1
         ChangeDirection = false
         for (let align3 of Alians) {
-            align3.y += 1
+            align3.y += 2
         }
     }
 })
