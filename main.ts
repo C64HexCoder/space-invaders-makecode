@@ -4,21 +4,14 @@ namespace SpriteKind {
     export const UFO = SpriteKind.create()
     export const Image = SpriteKind.create()
 }
+// let FireSoot = false
+let Wave = 1;
+
 sprites.onOverlap(SpriteKind.AlignProjectile, SpriteKind.Sheild, function (sprite, otherSprite) {
-    // for (let sh = 0; sh <= 2; sh++) {
-    // for (let y = 0; y <= 1; y++) {
-    // for (let x = 0; x <= 3; x++) {
-    // if (ShieldParts[sh][y][x].overlapsWith(sprite)) {
-    // otherSprite.destroy()
-    // }
-    // }
-    // }
-    // }
     otherSprite.destroy()
     sprite.destroy()
 })
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
-    //FireSoot = true
     if (ProjectilesList.length < 3) {
         ProjectilesList.push(sprites.createProjectileFromSprite(assets.image`CanonFire`, Canon, 0, -50))
         music.play(music.createSoundEffect(WaveShape.Sine, 5000, 0, 255, 0, 500, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
@@ -27,14 +20,24 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
 function PlaceAliens () {
     // Draw the alians
     for (let y = 0; y <= 2; y++) {
+        // pause (100)
         for (let x = 0; x <= 5; x++) {
             Alians[y * 6 + x] = new Align()
-            Alians[y * 6 + x].spr = sprites.create(AlignsImages[y][0])
-            Alians[y * 6 + x].spr.setPosition((x + 1) * 15, (y + 1) * 14)
+            Alians[y * 6 + x].spr = sprites.create(AlignAnimations[y][0])
+animation.runImageAnimation(
+            Alians[y * 6 + x].spr,
+            AlignAnimations[y],
+            500,
+            true
+            )
+            let w = AlignAnimations[y][0].width
+offset = (12 - w) / 2
+            Alians[y * 6 + x].spr.left = (x + 1) * 15 + offset
+Alians[y * 6 + x].spr.top = (y + 1) * 14
+console.log(Math.idiv(12 - AlignAnimations[y][0].width, 2))
             Alians[y * 6 + x].spr.setKind(SpriteKind.Enemy)
-            Alians[y * 6 + x].images = AlignsImages[y]
-            Alians[y * 6 + x].score = (y + 1) * 100
-            //pause (100)
+            Alians[y * 6 + x].images = AlignAnimations[y]
+Alians[y * 6 + x].score = (y + 1) * 100
         }
     }
 }
@@ -50,9 +53,12 @@ info.setScore(info.score() + 1000)
     music.play(music.melodyPlayable(music.bigCrash), music.PlaybackMode.InBackground)
 })
 sprites.onOverlap(SpriteKind.AlignProjectile, SpriteKind.Player, function (sprite, otherSprite) {
-    Canon.setImage(assets.image`CanonExplode`)
-    Canon.flags = SpriteFlag.Ghost
-Canon.lifespan = 200
+    sprites.destroy(sprite)
+    gamestat = GameStat.Died
+Canon.setImage(assets.image`CanonExplode`)
+    music.play(music.melodyPlayable(music.bigCrash), music.PlaybackMode.InBackground)
+    Canon.lifespan = 200
+    // Canon.setImage(assets.image`Canon`)
     LiveImage[--Lives].destroy()
     if (Lives == 0) {
         game.gameOver(false)
@@ -69,10 +75,12 @@ for (let align of Alians) {
     }
     if (Alians.length == 0) {
         Step = 1
-        if ((countsToFire-=1) < 1)
-            countsToFire = 1;
-        
+        if ((countsToFire-=1) < 1) {
+            countsToFire = 1
+        }
         fireCounter = countsToFire
+        game.splash("Wave "+ Wave + " cleared!", "Get ready...")
+        Wave++
         PlaceAliens()
     } else {
         music.play(music.melodyPlayable(music.bigCrash), music.PlaybackMode.InBackground)
@@ -85,12 +93,15 @@ sprites.onDestroyed(SpriteKind.Player, function (sprite) {
     // Create 3 sheilds
     Canon = sprites.create(assets.image`Canon`, SpriteKind.Player)
     Canon.setPosition(76, 102)
+    gamestat = GameStat.GameOn
 })
 sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Sheild, function (sprite, otherSprite) {
     sprite.destroy()
+    otherSprite.destroy()
 })
 // ProjectilesList.removeElement(otherSprite)
 sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, otherSprite) {
+    animation.stopAnimation(animation.AnimationTypes.All, otherSprite)
     otherSprite.setImage(explostion_original)
     otherSprite.lifespan = 300
     otherSprite.flags = SpriteFlag.Ghost
@@ -101,10 +112,10 @@ sprite.destroy()
         Step += -0.1
     }
 })
-let Align1Image = 0
 let projectile2: Sprite = null
 let ChangeDirection = false
-//let FireSoot = false
+let offset = 0
+let Canon: Sprite = null
 let explostion_original: Image = null
 let LiveImage: Sprite[] = []
 let spr: Sprite = null
@@ -117,7 +128,15 @@ let MotherShipImage =0
 let ProjectilesList: Sprite[] = []
 let Step = 0
 let Lives = 0
-let Canon: Sprite = null
+let fireCounter = 0
+let countsToFire = 0
+let AlignAnimations: Image[][] = []
+enum GameStat {
+    GameOn,
+    Died,
+}
+let gamestat : GameStat
+gamestat = GameStat.GameOn
 Lives = 3
 class Align {
     spr :Sprite
@@ -131,6 +150,7 @@ class UFO extends Sprite{
 }
 let ufo :UFO
 let CanonImage = assets.image`Live`
+let CanonExplode = assets.image`CanonExplode`
 explostion_original = assets.image`Explotion2`
 let MothershipFrames = [
 assets.image`MotherShip1`,
@@ -171,7 +191,8 @@ sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild)
 ]]]
 let fireRate = 2000
 ProjectilesList = []
-let AlignsImages = [[assets.image`space invader enemy 0`, assets.image`space invader enemy 1`], [assets.image`Align3_28pxh`, assets.image`Align3_18pxh`], [assets.image`Align1_18p`, assets.image`Align1_28p`]]
+let AlignsImages = [[assets.image`Align1_18p`, assets.image`Align1_28p`], [assets.image`space invader enemy 0`, assets.image`space invader enemy 1`], [assets.image`Align3_28pxh`, assets.image`Align3_18pxh`]]
+AlignAnimations = [assets.animation`Squid`, assets.animation`Puppy`, assets.animation`Faty`]
 Step = 1
 // FireSoot = false
 let Direction = 0.01
@@ -197,7 +218,12 @@ info.setBackgroundColor(0)
 info.setFontColor(1)
 info.setBorderColor(1)
 music.play(music.stringPlayable("A F E F D G E F ", 100), music.PlaybackMode.UntilDone)
+fireCounter = 6
+countsToFire = 6
 game.onUpdate(function () {
+    if (gamestat == GameStat.Died) {
+        return
+    }
     if (controller.left.isPressed()) {
         if (Canon.x > 10) {
             Canon.x += -3
@@ -251,29 +277,15 @@ game.onUpdateInterval(5000, function () {
         music.play(music.melodyPlayable(music.zapped), music.PlaybackMode.LoopingInBackground)
     }
 })
-let fireCounter = 6
-let countsToFire = 6
 game.onUpdateInterval(500, function () {
-    if (--fireCounter == 0)
-    {
+    if (--fireCounter == 0) {
         fireCounter = countsToFire
-    selectedAlign = Math.round(selectedAlign = Math.random() * (Alians.length-1))
-    projectile2 = sprites.createProjectileFromSprite(assets.image`AlignFire`, Alians[selectedAlign].spr, 0, 50)
-    projectile2.setKind(SpriteKind.AlignProjectile)
-    alianProjectiles.push(projectile2)
-    // alianProjectiles[alianProjectiles.length - 1].setKind(SpriteKind.AlignProjectile)
-    music.play(music.createSoundEffect(WaveShape.Sine, 2517, 1, 244, 8, 513, SoundExpressionEffect.None, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
-    }
-})
-game.onUpdateInterval(500, function () {
-    for (let value4 of Alians) {
-        if (value4.spr.image != explostion_original) {
-            value4.spr.setImage(value4.images[Align1Image])
-        }
-    }
-    Align1Image += 1
-    if (Align1Image > 1) {
-        Align1Image = 0
+        selectedAlign = Math.round(selectedAlign = Math.random() * (Alians.length-1))
+        projectile2 = sprites.createProjectileFromSprite(assets.image`AlignFire`, Alians[selectedAlign].spr, 0, 50)
+        projectile2.setKind(SpriteKind.AlignProjectile)
+        alianProjectiles.push(projectile2)
+        // alianProjectiles[alianProjectiles.length - 1].setKind(SpriteKind.AlignProjectile)
+        music.play(music.createSoundEffect(WaveShape.Sine, 2517, 1, 244, 8, 513, SoundExpressionEffect.None, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
     }
 })
 game.onUpdateInterval(100, function () {
