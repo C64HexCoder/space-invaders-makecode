@@ -8,7 +8,12 @@ function readhighScore () {
     highScoreTable = []
     highScoreTable = settings.readJSON("highscores") as HighScoreEntry[] || []
     if (highScoreTable.length > 0) {
-        bestScore = highScoreTable[0].score
+        bestScore = highScoreTable[4].score
+    }
+}
+function killAllEnemyProjectiles () {
+    for (let EnemyProjectiles of alianProjectiles) {
+        EnemyProjectiles.destroy()
     }
 }
 sprites.onOverlap(SpriteKind.AlignProjectile, SpriteKind.Sheild, function (sprite, otherSprite) {
@@ -54,6 +59,11 @@ Alians[y * 6 + x].score = (y + 1) * 100
 sprites.onDestroyed(SpriteKind.AlignProjectile, function (sprite) {
     alianProjectiles.removeElement(sprite)
 })
+function killAllPlayerProjectiles () {
+    for (let PlayerProjectiles of ProjectilesList) {
+        PlayerProjectiles.destroy()
+    }
+}
 sprites.onOverlap(SpriteKind.Projectile, SpriteKind.UFO, function (sprite, otherSprite) {
     music.stopAllSounds()
     otherSprite.setImage(explostion_original)
@@ -96,10 +106,12 @@ function gameOver () {
     music.stopAllSounds()
     screen.fill(0)
     screen.print("GAME OVER",56,50)
-if (info.score() <= bestScore) {
+if (info.score() >= bestScore) {
         music.play(music.melodyPlayable(music.powerUp), music.PlaybackMode.UntilDone)
     } else {
         music.play(music.melodyPlayable(music.wawawawaa), music.PlaybackMode.UntilDone)
+        pause(1000)
+        game.reset()
     }
     pause(1000)
     name = game.askForString("What's your Name?")
@@ -144,6 +156,7 @@ for (let align of Alians) {
         fireCounter = countsToFire
         game.splash("Wave " + Wave + " cleared!", "Get ready...")
         Wave += 1
+        killAllEnemyProjectiles()
         PlaceAliens()
     } else {
         music.play(music.melodyPlayable(music.bigCrash), music.PlaybackMode.InBackground)
@@ -173,37 +186,37 @@ sprite.destroy()
         Step += -0.1
     }
 })
-let projectile2: Sprite = null
+let projectile22: Sprite = null
 let ChangeDirection = false
 let Canon: Sprite = null
 let explostion_original: Image = null
 let CanonImage: Image = null
-let Lives = 0
-let bestScore = 0
-let table: HighScoreEntry[] = []
-let table2: HighScoreEntry[] = []
-let y2 = 0
-let name = ""
-let offset = 0
-let LiveImage: Sprite[] = []
-let spr: Sprite = null
-let alianProjectiles: Sprite[] = []
-let MotherShip: Sprite = null
-let selectedAlign = 0
-let Alians: Align[] = []
-let projectile = null
-let MotherShipImage =0
-let ProjectilesList: Sprite[] = []
-let Step = 0
-let fireCounter = 0
-let countsToFire = 0
-let AlignAnimations: Image[][] = []
-let Wave = 0
-let table22 = false
-let y22 = 0
-let name2 = ""
-let table3 = false
 let highScoreTable = []
+let table3 = false
+let name2 = ""
+let y22 = 0
+let table22 = false
+let Wave = 0
+let AlignAnimations: Image[][] = []
+let countsToFire = 0
+let fireCounter = 0
+let Step = 0
+let ProjectilesList: Sprite[] = []
+let MotherShipImage = 0
+let projectile3 = null
+let Alians: Align[] = []
+let selectedAlign = 0
+let MotherShip: Sprite = null
+let alianProjectiles: Sprite[] = []
+let spr: Sprite = null
+let LiveImage: Sprite[] = []
+let offset = 0
+let name = ""
+let y2 = 0
+let table2: HighScoreEntry[] = []
+let table: HighScoreEntry[] = []
+let bestScore = 0
+let Lives = 0
 info.setLifeImage(assets.image`Live`)
 interface HighScoreEntry {
     name: string
@@ -214,6 +227,7 @@ Wave = 1
 enum GameStat {
     GameOn,
     Died,
+    GameOver
 }
 let gamestat : GameStat
 gamestat = GameStat.GameOn
@@ -228,6 +242,7 @@ class UFO extends Sprite{
     frames :Image[]
     score  :Number
 }
+readhighScore()
 let ufo :UFO
 CanonImage = assets.image`Live`
 let CanonExplode = assets.image`CanonExplode`
@@ -372,7 +387,7 @@ game.onUpdateInterval(5000, function () {
         animation.runImageAnimation(
         MotherShip,
         assets.animation`MotherShipAnim`,
-        200,
+        100,
         true
         )
         music.play(music.melodyPlayable(music.zapped), music.PlaybackMode.LoopingInBackground)
@@ -385,9 +400,9 @@ game.onUpdateInterval(500, function () {
     if (--fireCounter == 0) {
         fireCounter = countsToFire
         selectedAlign = Math.round(selectedAlign = Math.random() * (Alians.length-1))
-        projectile2 = sprites.createProjectileFromSprite(assets.image`AlignFire`, Alians[selectedAlign].spr, 0, 50)
-        projectile2.setKind(SpriteKind.AlignProjectile)
-        alianProjectiles.push(projectile2)
+        projectile22 = sprites.createProjectileFromSprite(assets.image`AlignFire`, Alians[selectedAlign].spr, 0, 50)
+        projectile22.setKind(SpriteKind.AlignProjectile)
+        alianProjectiles.push(projectile22)
         music.play(music.createSoundEffect(WaveShape.Sine, 2517, 1, 244, 8, 513, SoundExpressionEffect.None, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
     }
 })
