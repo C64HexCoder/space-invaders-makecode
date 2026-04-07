@@ -21,6 +21,13 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
         music.play(music.createSoundEffect(WaveShape.Sine, 5000, 0, 255, 0, 500, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
     }
 })
+function setLivesArray () {
+    for (let index = 0; index <= Lives - 1; index++) {
+        LiveImage[index] = sprites.create(CanonImage, SpriteKind.Image)
+        LiveImage[index].setPosition(10 + 15 * index, 115)
+        LiveImage[index].flags = SpriteFlag.Ghost
+    }
+}
 function PlaceAliens () {
     // Draw the alians
     for (let y = 0; y <= 2; y++) {
@@ -38,8 +45,7 @@ animation.runImageAnimation(
 offset = (12 - w) / 2
             Alians[y * 6 + x].spr.left = (x + 1) * 15 + offset
 Alians[y * 6 + x].spr.top = (y + 1) * 14
-console.log(Math.idiv(12 - AlignAnimations[y][0].width, 2))
-            Alians[y * 6 + x].spr.setKind(SpriteKind.Enemy)
+Alians[y * 6 + x].spr.setKind(SpriteKind.Enemy)
             Alians[y * 6 + x].images = AlignAnimations[y]
 Alians[y * 6 + x].score = (y + 1) * 100
         }
@@ -120,10 +126,6 @@ Canon.setImage(assets.image`CanonExplode`)
     music.play(music.melodyPlayable(music.bigCrash), music.PlaybackMode.InBackground)
     Canon.lifespan = 200
     LiveImage[--Lives].destroy()
-    info.changeLifeBy(-1)
-})
-info.onLifeZero(function () {
-    gameOver()
 })
 sprites.onDestroyed(SpriteKind.Enemy, function (sprite) {
     let tempAlign = new Align()
@@ -175,34 +177,34 @@ let projectile2: Sprite = null
 let ChangeDirection = false
 let Canon: Sprite = null
 let explostion_original: Image = null
-let highScoreTable = []
-let table3 = false
-let name2 = ""
-let y22 = 0
-let table22 = false
-let Wave = 0
-let AlignAnimations: Image[][] = []
-let countsToFire = 0
-let fireCounter = 0
+let CanonImage: Image = null
 let Lives = 0
-let Step = 0
-let ProjectilesList: Sprite[] = []
-let MotherShipImage =0
-let projectile = null
-let Alians: Align[] = []
-let selectedAlign = 0
-let MotherShip: Sprite = null
-let alianProjectiles: Sprite[] = []
-let spr: Sprite = null
-let LiveImage: Sprite[] = []
-let offset = 0
-let name = ""
-let y2 = 0
-let table2: HighScoreEntry[] = []
-let table: HighScoreEntry[] = []
 let bestScore = 0
+let table: HighScoreEntry[] = []
+let table2: HighScoreEntry[] = []
+let y2 = 0
+let name = ""
+let offset = 0
+let LiveImage: Sprite[] = []
+let spr: Sprite = null
+let alianProjectiles: Sprite[] = []
+let MotherShip: Sprite = null
+let selectedAlign = 0
+let Alians: Align[] = []
+let projectile = null
+let MotherShipImage =0
+let ProjectilesList: Sprite[] = []
+let Step = 0
+let fireCounter = 0
+let countsToFire = 0
+let AlignAnimations: Image[][] = []
+let Wave = 0
+let table22 = false
+let y22 = 0
+let name2 = ""
+let table3 = false
+let highScoreTable = []
 info.setLifeImage(assets.image`Live`)
-info.setLife(3)
 interface HighScoreEntry {
     name: string
     wave: number
@@ -227,15 +229,9 @@ class UFO extends Sprite{
     score  :Number
 }
 let ufo :UFO
-let CanonImage = assets.image`Live`
+CanonImage = assets.image`Live`
 let CanonExplode = assets.image`CanonExplode`
 explostion_original = assets.image`Explotion2`
-let MothershipFrames = [
-assets.image`MotherShip1`,
-assets.image`MotherShip2`,
-assets.image`MotherShip3`,
-assets.image`MotherShip4`
-]
 let ShieldParts = [[[
 sprites.create(assets.image`SheildLeftUp`, SpriteKind.Sheild),
 sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild),
@@ -285,15 +281,6 @@ for (let sh2 = 0; sh2 <= 2; sh2++) {
         }
     }
 }
-
-function setLivesArray ()
-{
-    for (let index = 0; index <= Lives - 1; index++) {
-        LiveImage[index] = sprites.create(CanonImage, SpriteKind.Image)
-        LiveImage[index].setPosition(10 + 15 * index, 115)
-        LiveImage[index].flags = SpriteFlag.Ghost
-    }
-}
 info.setBackgroundColor(0)
 info.setFontColor(1)
 info.setBorderColor(1)
@@ -337,6 +324,9 @@ if (align3.spr.y > 80) {
     }
 })
 game.onUpdate(function () {
+    if (Lives == 0) {
+        gameOver()
+    }
     if (gamestat == GameStat.Died) {
         return
     }
@@ -353,16 +343,45 @@ game.onUpdate(function () {
     }
 })
 game.onUpdateInterval(5000, function () {
+    if (gamestat == GameStat.Died) {
+        return
+    }
     if (Math.random() * 100 <= 50) {
         return
     }
     if (MotherShip == null) {
-        MotherShip = sprites.create(MothershipFrames[0], SpriteKind.UFO)
+        MotherShip = sprites.create(img`
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            `, SpriteKind.UFO)
         MotherShip.setPosition(160, 10)
+        animation.runImageAnimation(
+        MotherShip,
+        assets.animation`MotherShipAnim`,
+        200,
+        true
+        )
         music.play(music.melodyPlayable(music.zapped), music.PlaybackMode.LoopingInBackground)
     }
 })
 game.onUpdateInterval(500, function () {
+    if (gamestat == GameStat.Died) {
+        return
+    }
     if (--fireCounter == 0) {
         fireCounter = countsToFire
         selectedAlign = Math.round(selectedAlign = Math.random() * (Alians.length-1))
@@ -370,13 +389,5 @@ game.onUpdateInterval(500, function () {
         projectile2.setKind(SpriteKind.AlignProjectile)
         alianProjectiles.push(projectile2)
         music.play(music.createSoundEffect(WaveShape.Sine, 2517, 1, 244, 8, 513, SoundExpressionEffect.None, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
-    }
-})
-game.onUpdateInterval(100, function () {
-    if (MotherShip != null && MotherShip.image != explostion_original) {
-        MotherShip.setImage(MothershipFrames[MotherShipImage+=5])
-        if (MotherShipImage > 4) {
-            MotherShipImage = 0
-        }
     }
 })
