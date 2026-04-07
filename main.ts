@@ -102,6 +102,42 @@ pause(150)
     pauseUntil(() => controller.A.isPressed())
     game.reset()
 }
+let isHit = false
+
+sprites.onOverlap(SpriteKind.AlignProjectile, SpriteKind.Player, function (sprite, otherSprite) {
+    if (isHit) return   // מונע ריצה כפולה
+    isHit = true
+
+    sprites.destroy(sprite)
+
+    // עצירת תנועה
+    Canon.vx = 0
+
+    // אנימציית פיצוץ
+    animation.runImageAnimation(
+        Canon,
+        [
+            assets.image`CanonExplode1`,
+            assets.image`CanonExplode2`
+        ],
+        80,
+        false
+    )
+
+    // מחכים שהאנימציה תסתיים
+    pause(200)
+
+    // מחזירים את התותח הרגיל
+    Canon.setImage(assets.image`Canon`)
+
+    // מחזירים שליטה
+    Canon.vx = 100
+    gamestat = GameStat.Died
+    LiveImage[--Lives].destroy()
+    // מחזירים את הדגל
+    isHit = false
+})
+
 function gameOver () {
     music.stopAllSounds()
     screen.fill(0)
@@ -131,14 +167,12 @@ if (info.score() >= bestScore) {
 settings.writeJSON("highscores", table)
 showGameOverScreen()
 }
-sprites.onOverlap(SpriteKind.AlignProjectile, SpriteKind.Player, function (sprite, otherSprite) {
+/*sprites.onOverlap(SpriteKind.AlignProjectile, SpriteKind.Player, function (sprite, otherSprite) {
     sprites.destroy(sprite)
     gamestat = GameStat.Died
-Canon.setImage(assets.image`CanonExplode`)
-    music.play(music.melodyPlayable(music.bigCrash), music.PlaybackMode.InBackground)
-    Canon.lifespan = 200
+    canonExplode()
     LiveImage[--Lives].destroy()
-})
+})*/
 sprites.onDestroyed(SpriteKind.Enemy, function (sprite) {
     let tempAlign = new Align()
 tempAlign.spr = sprite;
@@ -191,32 +225,32 @@ let ChangeDirection = false
 let Canon: Sprite = null
 let explostion_original: Image = null
 let CanonImage: Image = null
-let highScoreTable = []
-let table3 = false
-let name2 = ""
-let y22 = 0
-let table22 = false
-let Wave = 0
-let AlignAnimations: Image[][] = []
-let countsToFire = 0
-let fireCounter = 0
-let Step = 0
-let ProjectilesList: Sprite[] = []
-let MotherShipImage = 0
-let projectile3 = null
-let Alians: Align[] = []
-let selectedAlign = 0
-let MotherShip: Sprite = null
-let alianProjectiles: Sprite[] = []
-let spr: Sprite = null
-let LiveImage: Sprite[] = []
-let offset = 0
-let name = ""
-let y2 = 0
-let table2: HighScoreEntry[] = []
-let table: HighScoreEntry[] = []
-let bestScore = 0
 let Lives = 0
+let bestScore = 0
+let table: HighScoreEntry[] = []
+let table2: HighScoreEntry[] = []
+let y2 = 0
+let name = ""
+let offset = 0
+let LiveImage: Sprite[] = []
+let spr: Sprite = null
+let alianProjectiles: Sprite[] = []
+let MotherShip: Sprite = null
+let selectedAlign = 0
+let Alians: Align[] = []
+let projectile3 = null
+let MotherShipImage = 0
+let ProjectilesList: Sprite[] = []
+let Step = 0
+let fireCounter = 0
+let countsToFire = 0
+let AlignAnimations: Image[][] = []
+let Wave = 0
+let table22 = false
+let y22 = 0
+let name2 = ""
+let table3 = false
+let highScoreTable = []
 info.setLifeImage(assets.image`Live`)
 interface HighScoreEntry {
     name: string
