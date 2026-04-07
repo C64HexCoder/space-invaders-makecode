@@ -4,9 +4,13 @@ namespace SpriteKind {
     export const UFO = SpriteKind.create()
     export const Image = SpriteKind.create()
 }
-// let FireSoot = false
-let Wave = 1;
-
+function readhighScore () {
+    highScoreTable = []
+    highScoreTable = settings.readJSON("highscores") as HighScoreEntry[] || []
+    if (highScoreTable.length > 0) {
+        bestScore = highScoreTable[0].score
+    }
+}
 sprites.onOverlap(SpriteKind.AlignProjectile, SpriteKind.Sheild, function (sprite, otherSprite) {
     otherSprite.destroy()
     sprite.destroy()
@@ -52,17 +56,74 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.UFO, function (sprite, other
 info.setScore(info.score() + 1000)
     music.play(music.melodyPlayable(music.bigCrash), music.PlaybackMode.InBackground)
 })
+function showGameOverScreen () {
+    // קריאה בטוחה לנתונים
+    table2 = settings.readJSON("highscores") as HighScoreEntry[] || []
+    if (!(Array.isArray(table2))) {
+        table2 = []
+    }
+    // ניקוי מסך
+    screen.fill(0)
+    screen.print("GAME OVER", 56, 10)
+screen.print("HIGH SCORES", 30, 30)
+// הדפסת טבלה
+    y2 = 50
+    for (let i = 0; i < table2.length && i < 5; i++) {
+        const e = table2[i]
+
+        // הגנה מפני רשומות פגומות
+        if (!e || !e.name) continue
+
+        screen.print(
+            `${i + 1}. ${e.name}  W:${e.wave}  S:${e.score}`,
+            10,
+            y2
+        )
+        y2 += 12
+    }
+screen.print("Press A to continue", 10, 110)
+pause(150)
+    pauseUntil(() => controller.A.isPressed())
+    game.reset()
+}
+function gameOver () {
+    music.stopAllSounds()
+    screen.fill(0)
+    screen.print("GAME OVER",56,50)
+if (info.score() <= bestScore) {
+        music.play(music.melodyPlayable(music.powerUp), music.PlaybackMode.UntilDone)
+    } else {
+        music.play(music.melodyPlayable(music.wawawawaa), music.PlaybackMode.UntilDone)
+    }
+    pause(1000)
+    name = game.askForString("What's your Name?")
+    table = settings.readJSON("highscores") as HighScoreEntry[] || []
+    if (!(Array.isArray(table))) {
+        table = []
+    }
+    table.push({
+        name: name,
+        score: info.score(),
+        wave: Wave
+    })
+    table.sort((a, b) => {
+        if (b.wave == a.wave) return b.score - a.score
+        return b.wave - a.wave
+    })
+settings.writeJSON("highscores", table)
+showGameOverScreen()
+}
 sprites.onOverlap(SpriteKind.AlignProjectile, SpriteKind.Player, function (sprite, otherSprite) {
     sprites.destroy(sprite)
     gamestat = GameStat.Died
 Canon.setImage(assets.image`CanonExplode`)
     music.play(music.melodyPlayable(music.bigCrash), music.PlaybackMode.InBackground)
     Canon.lifespan = 200
-    // Canon.setImage(assets.image`Canon`)
     LiveImage[--Lives].destroy()
-    if (Lives == 0) {
-        game.gameOver(false)
-    }
+    info.changeLifeBy(-1)
+})
+info.onLifeZero(function () {
+    gameOver()
 })
 sprites.onDestroyed(SpriteKind.Enemy, function (sprite) {
     let tempAlign = new Align()
@@ -79,8 +140,8 @@ for (let align of Alians) {
             countsToFire = 1
         }
         fireCounter = countsToFire
-        game.splash("Wave "+ Wave + " cleared!", "Get ready...")
-        Wave++
+        game.splash("Wave " + Wave + " cleared!", "Get ready...")
+        Wave += 1
         PlaceAliens()
     } else {
         music.play(music.melodyPlayable(music.bigCrash), music.PlaybackMode.InBackground)
@@ -90,7 +151,6 @@ sprites.onDestroyed(SpriteKind.Projectile, function (sprite) {
     ProjectilesList.removeElement(sprite)
 })
 sprites.onDestroyed(SpriteKind.Player, function (sprite) {
-    // Create 3 sheilds
     Canon = sprites.create(assets.image`Canon`, SpriteKind.Player)
     Canon.setPosition(76, 102)
     gamestat = GameStat.GameOn
@@ -99,7 +159,6 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Sheild, function (sprite, ot
     sprite.destroy()
     otherSprite.destroy()
 })
-// ProjectilesList.removeElement(otherSprite)
 sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, otherSprite) {
     animation.stopAnimation(animation.AnimationTypes.All, otherSprite)
     otherSprite.setImage(explostion_original)
@@ -114,23 +173,42 @@ sprite.destroy()
 })
 let projectile2: Sprite = null
 let ChangeDirection = false
-let offset = 0
 let Canon: Sprite = null
 let explostion_original: Image = null
-let LiveImage: Sprite[] = []
-let spr: Sprite = null
-let alianProjectiles: Sprite[] = []
-let MotherShip: Sprite = null
-let selectedAlign = 0
-let Alians: Align[] = []
-let projectile = null
-let MotherShipImage =0
-let ProjectilesList: Sprite[] = []
-let Step = 0
-let Lives = 0
-let fireCounter = 0
-let countsToFire = 0
+let highScoreTable = []
+let table3 = false
+let name2 = ""
+let y22 = 0
+let table22 = false
+let Wave = 0
 let AlignAnimations: Image[][] = []
+let countsToFire = 0
+let fireCounter = 0
+let Lives = 0
+let Step = 0
+let ProjectilesList: Sprite[] = []
+let MotherShipImage =0
+let projectile = null
+let Alians: Align[] = []
+let selectedAlign = 0
+let MotherShip: Sprite = null
+let alianProjectiles: Sprite[] = []
+let spr: Sprite = null
+let LiveImage: Sprite[] = []
+let offset = 0
+let name = ""
+let y2 = 0
+let table2: HighScoreEntry[] = []
+let table: HighScoreEntry[] = []
+let bestScore = 0
+info.setLifeImage(assets.image`Live`)
+info.setLife(3)
+interface HighScoreEntry {
+    name: string
+    wave: number
+    score: number
+}
+Wave = 1
 enum GameStat {
     GameOn,
     Died,
@@ -191,27 +269,29 @@ sprites.create(assets.image`SheildPart2`, SpriteKind.Sheild)
 ]]]
 let fireRate = 2000
 ProjectilesList = []
-let AlignsImages = [[assets.image`Align1_18p`, assets.image`Align1_28p`], [assets.image`space invader enemy 0`, assets.image`space invader enemy 1`], [assets.image`Align3_28pxh`, assets.image`Align3_18pxh`]]
 AlignAnimations = [assets.animation`Squid`, assets.animation`Puppy`, assets.animation`Faty`]
 Step = 1
-// FireSoot = false
 let Direction = 0.01
 scene.setBackgroundImage(assets.image`background`)
-for (let index = 0; index <= Lives - 1; index++) {
-    LiveImage[index] = sprites.create(CanonImage, SpriteKind.Image)
-    LiveImage[index].setPosition(10 + 15 * index, 115)
-    LiveImage[index].flags = SpriteFlag.Ghost
-}
+setLivesArray()
 PlaceAliens()
-// Create 3 sheilds
 Canon = sprites.create(assets.image`Canon`, SpriteKind.Player)
 Canon.setPosition(76, 102)
 for (let sh2 = 0; sh2 <= 2; sh2++) {
-    for (let y22 = 0; y22 <= 1; y22++) {
+    for (let y222 = 0; y222 <= 1; y222++) {
         for (let x2 = 0; x2 <= 3; x2++) {
-            ShieldParts[sh2][y22][x2].x = 25 + 50 * sh2 + x2 * 4
-            ShieldParts[sh2][y22][x2].y = 90 + y22 * 5
+            ShieldParts[sh2][y222][x2].x = 25 + 50 * sh2 + x2 * 4
+            ShieldParts[sh2][y222][x2].y = 90 + y222 * 5
         }
+    }
+}
+
+function setLivesArray ()
+{
+    for (let index = 0; index <= Lives - 1; index++) {
+        LiveImage[index] = sprites.create(CanonImage, SpriteKind.Image)
+        LiveImage[index].setPosition(10 + 15 * index, 115)
+        LiveImage[index].flags = SpriteFlag.Ghost
     }
 }
 info.setBackgroundColor(0)
@@ -220,22 +300,11 @@ info.setBorderColor(1)
 music.play(music.stringPlayable("A F E F D G E F ", 100), music.PlaybackMode.UntilDone)
 fireCounter = 6
 countsToFire = 6
-game.onUpdate(function () {
-    if (gamestat == GameStat.Died) {
-        return
-    }
-    if (controller.left.isPressed()) {
-        if (Canon.x > 10) {
-            Canon.x += -3
-        }
-    } else {
-        if (controller.right.isPressed()) {
-            if (Canon.x < 150) {
-                Canon.x += 3
-            }
-        }
-    }
-})
+interface HighScoreEntry {
+    name: string
+    score: number
+    wave: number
+}
 game.onUpdate(function () {
     for (let align2 of Alians) {
         if (align2.spr.flags != SpriteFlag.Ghost) {
@@ -255,7 +324,7 @@ game.onUpdate(function () {
             align3.spr.y += 2
 if (align3.spr.y > 80) {
                 music.stopAllSounds()
-                game.gameOver(false)
+                gameOver()
             }
         }
     }
@@ -264,6 +333,22 @@ if (align3.spr.y > 80) {
             music.stopAllSounds()
             MotherShip.destroy()
             MotherShip = null;
+        }
+    }
+})
+game.onUpdate(function () {
+    if (gamestat == GameStat.Died) {
+        return
+    }
+    if (controller.left.isPressed()) {
+        if (Canon.x > 10) {
+            Canon.x += -3
+        }
+    } else {
+        if (controller.right.isPressed()) {
+            if (Canon.x < 150) {
+                Canon.x += 3
+            }
         }
     }
 })
@@ -284,7 +369,6 @@ game.onUpdateInterval(500, function () {
         projectile2 = sprites.createProjectileFromSprite(assets.image`AlignFire`, Alians[selectedAlign].spr, 0, 50)
         projectile2.setKind(SpriteKind.AlignProjectile)
         alianProjectiles.push(projectile2)
-        // alianProjectiles[alianProjectiles.length - 1].setKind(SpriteKind.AlignProjectile)
         music.play(music.createSoundEffect(WaveShape.Sine, 2517, 1, 244, 8, 513, SoundExpressionEffect.None, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
     }
 })
