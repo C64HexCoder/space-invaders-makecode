@@ -102,42 +102,6 @@ pause(150)
     pauseUntil(() => controller.A.isPressed())
     game.reset()
 }
-let isHit = false
-
-sprites.onOverlap(SpriteKind.AlignProjectile, SpriteKind.Player, function (sprite, otherSprite) {
-    if (isHit) return   // מונע ריצה כפולה
-    isHit = true
-
-    sprites.destroy(sprite)
-
-    // עצירת תנועה
-    Canon.vx = 0
-
-    // אנימציית פיצוץ
-    animation.runImageAnimation(
-        Canon,
-        [
-            assets.image`CanonExplode1`,
-            assets.image`CanonExplode2`
-        ],
-        80,
-        false
-    )
-
-    // מחכים שהאנימציה תסתיים
-    pause(200)
-
-    // מחזירים את התותח הרגיל
-    Canon.setImage(assets.image`Canon`)
-
-    // מחזירים שליטה
-    Canon.vx = 100
-    gamestat = GameStat.Died
-    LiveImage[--Lives].destroy()
-    // מחזירים את הדגל
-    isHit = false
-})
-
 function gameOver () {
     music.stopAllSounds()
     screen.fill(0)
@@ -167,12 +131,19 @@ if (info.score() >= bestScore) {
 settings.writeJSON("highscores", table)
 showGameOverScreen()
 }
-/*sprites.onOverlap(SpriteKind.AlignProjectile, SpriteKind.Player, function (sprite, otherSprite) {
-    sprites.destroy(sprite)
+sprites.onOverlap(SpriteKind.AlignProjectile, SpriteKind.Player, function (sprite, otherSprite) {
     gamestat = GameStat.Died
-    canonExplode()
+music.play(music.melodyPlayable(music.bigCrash), music.PlaybackMode.UntilDone)
+    animation.runImageAnimation(
+    Canon,
+    assets.animation`explosion`,
+    50,
+    false
+    )
+    pause(200)
+    Canon.destroy()
     LiveImage[--Lives].destroy()
-})*/
+})
 sprites.onDestroyed(SpriteKind.Enemy, function (sprite) {
     let tempAlign = new Align()
 tempAlign.spr = sprite;
@@ -251,6 +222,7 @@ let y22 = 0
 let name2 = ""
 let table3 = false
 let highScoreTable = []
+let isHit = false
 info.setLifeImage(assets.image`Live`)
 interface HighScoreEntry {
     name: string
