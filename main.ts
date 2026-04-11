@@ -18,6 +18,7 @@ function killAllEnemyProjectiles () {
 }
 sprites.onOverlap(SpriteKind.AlignProjectile, SpriteKind.Sheild, function (sprite, otherSprite) {
     otherSprite.destroy()
+    music.play(music.melodyPlayable(music.bigCrash), music.PlaybackMode.UntilDone)
     sprite.destroy()
 })
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
@@ -131,6 +132,9 @@ if (info.score() >= bestScore) {
 settings.writeJSON("highscores", table)
 showGameOverScreen()
 }
+function populateScreen () {
+    PlaceAliens()
+}
 sprites.onOverlap(SpriteKind.AlignProjectile, SpriteKind.Player, function (sprite, otherSprite) {
     gamestat = GameStat.Died
 music.play(music.melodyPlayable(music.bigCrash), music.PlaybackMode.UntilDone)
@@ -162,15 +166,24 @@ for (let align of Alians) {
         game.splash("Wave " + Wave + " cleared!", "Get ready...")
         Wave += 1
         killAllEnemyProjectiles()
+        
         PlaceAliens()
     } else {
         music.play(music.melodyPlayable(music.bigCrash), music.PlaybackMode.InBackground)
     }
 })
+function setNewWave()
+{
+    if (Wave % 5 == 0)
+    {
+
+    }   
+}
 sprites.onDestroyed(SpriteKind.Projectile, function (sprite) {
     ProjectilesList.removeElement(sprite)
 })
 sprites.onDestroyed(SpriteKind.Player, function (sprite) {
+    pause(500)
     Canon = sprites.create(assets.image`Canon`, SpriteKind.Player)
     Canon.setPosition(76, 102)
     gamestat = GameStat.GameOn
@@ -196,33 +209,33 @@ let ChangeDirection = false
 let Canon: Sprite = null
 let explostion_original: Image = null
 let CanonImage: Image = null
-let Lives = 0
-let bestScore = 0
-let table: HighScoreEntry[] = []
-let table2: HighScoreEntry[] = []
-let y2 = 0
-let name = ""
-let offset = 0
-let LiveImage: Sprite[] = []
-let spr: Sprite = null
-let alianProjectiles: Sprite[] = []
-let MotherShip: Sprite = null
-let selectedAlign = 0
-let Alians: Align[] = []
-let projectile3 = null
-let MotherShipImage = 0
-let ProjectilesList: Sprite[] = []
-let Step = 0
-let fireCounter = 0
-let countsToFire = 0
-let AlignAnimations: Image[][] = []
-let Wave = 0
-let table22 = false
-let y22 = 0
-let name2 = ""
-let table3 = false
-let highScoreTable = []
 let isHit = false
+let highScoreTable = []
+let table3 = false
+let name2 = ""
+let y22 = 0
+let table22 = false
+let Wave = 0
+let AlignAnimations: Image[][] = []
+let countsToFire = 0
+let fireCounter = 0
+let Step = 0
+let ProjectilesList: Sprite[] = []
+let MotherShipImage = 0
+let projectile3 = null
+let Alians: Align[] = []
+let selectedAlign = 0
+let MotherShip: Sprite = null
+let alianProjectiles: Sprite[] = []
+let spr: Sprite = null
+let LiveImage: Sprite[] = []
+let offset = 0
+let name = ""
+let y2 = 0
+let table2: HighScoreEntry[] = []
+let table: HighScoreEntry[] = []
+let bestScore = 0
+let Lives = 0
 info.setLifeImage(assets.image`Live`)
 interface HighScoreEntry {
     name: string
@@ -251,7 +264,6 @@ class UFO extends Sprite{
 readhighScore()
 let ufo :UFO
 CanonImage = assets.image`Live`
-let CanonExplode = assets.image`CanonExplode`
 explostion_original = assets.image`Explotion2`
 let ShieldParts = [[[
 sprites.create(assets.image`SheildLeftUp`, SpriteKind.Sheild),
@@ -314,33 +326,35 @@ interface HighScoreEntry {
     wave: number
 }
 game.onUpdate(function () {
-    for (let align2 of Alians) {
-        if (align2.spr.flags != SpriteFlag.Ghost) {
-            align2.spr.x += Step
-        }
-        if (align2.spr.x >= 150) {
-            ChangeDirection = true
-        }
-        if (align2.spr.x <= 10) {
-            ChangeDirection = true
-        }
-    }
-    if (ChangeDirection) {
-        Step = Step * -1
-        ChangeDirection = false
-        for (let align3 of Alians) {
-            align3.spr.y += 2
-if (align3.spr.y > 80) {
-                music.stopAllSounds()
-                gameOver()
+    if (gamestat == GameStat.GameOn) {
+        for (let align2 of Alians) {
+            if (align2.spr.flags != SpriteFlag.Ghost) {
+                align2.spr.x += Step
+            }
+            if (align2.spr.x >= 150) {
+                ChangeDirection = true
+            }
+            if (align2.spr.x <= 10) {
+                ChangeDirection = true
             }
         }
-    }
-    if (MotherShip != null && MotherShip.flags != SpriteFlag.Ghost) {
-        if ((MotherShip.x-=0.5) <= 0) {
-            music.stopAllSounds()
-            MotherShip.destroy()
-            MotherShip = null;
+        if (ChangeDirection) {
+            Step = Step * -1
+            ChangeDirection = false
+            for (let align3 of Alians) {
+                align3.spr.y += 2
+if (align3.spr.y > 80) {
+                    music.stopAllSounds()
+                    gameOver()
+                }
+            }
+        }
+        if (MotherShip != null && MotherShip.flags != SpriteFlag.Ghost) {
+            if ((MotherShip.x-=0.5) <= 0) {
+                music.stopAllSounds()
+                MotherShip.destroy()
+                MotherShip = null;
+            }
         }
     }
 })
