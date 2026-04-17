@@ -7,8 +7,10 @@ namespace SpriteKind {
 function readhighScore () {
     highScoreTable = []
     highScoreTable = settings.readJSON("highscores") as HighScoreEntry[] || []
-    if (highScoreTable.length > 0) {
+    if (highScoreTable.length > 5) {
         bestScore = highScoreTable[4].score
+    } else {
+        bestScore = highScoreTable[highScoreTable.length-1].score
     }
 }
 function killAllEnemyProjectiles () {
@@ -41,7 +43,7 @@ function PlaceAliens () {
         for (let x = 0; x <= 5; x++) {
             Alians[y * 6 + x] = new Align()
             Alians[y * 6 + x].spr = sprites.create(AlignAnimations[y][0])
-animation.runImageAnimation(
+            animation.runImageAnimation(
             Alians[y * 6 + x].spr,
             AlignAnimations[y],
             500,
@@ -64,6 +66,14 @@ function killAllPlayerProjectiles () {
     for (let PlayerProjectiles of ProjectilesList) {
         PlayerProjectiles.destroy()
     }
+}
+function lerp (a: number, b: number, t: number) {
+    return a + (b - a) * t
+}
+function Pointlerp (a: Point, b: Point, t: number) : Point {
+    let x = lerp (a.x,b.x,t)
+    let y = lerp (a.y,b.y,t)
+    return {x: x,y: y}
 }
 sprites.onOverlap(SpriteKind.Projectile, SpriteKind.UFO, function (sprite, otherSprite) {
     music.stopAllSounds()
@@ -125,6 +135,7 @@ if (info.score() >= bestScore) {
         score: info.score(),
         wave: Wave
     })
+
     table.sort((a, b) => {
         if (b.wave == a.wave) return b.score - a.score
         return b.wave - a.wave
@@ -132,6 +143,8 @@ if (info.score() >= bestScore) {
 settings.writeJSON("highscores", table)
 showGameOverScreen()
 }
+let UFOCurve: Point[] = [{ x: 170, y: 20 }, { x: 80, y: 8 }, { x: 0, y: 20 }, { x: 80, y: 30 },{x: 160,y: 60},{x: 80,y: 120},{x: -20,y: 8}]
+
 function populateScreen () {
     PlaceAliens()
 }
@@ -148,6 +161,42 @@ music.play(music.melodyPlayable(music.bigCrash), music.PlaybackMode.UntilDone)
     Canon.destroy()
     LiveImage[--Lives].destroy()
 })
+function setNewWave () {
+    if (Wave % 2 == 0) {
+        gamestat = GameStat.BezierAttack
+        spawnSpecialShip()
+    
+    } else {
+        gamestat = GameStat.GameOn
+        populateScreen()
+    }
+}
+function spawnSpecialShip () {
+    ship = sprites.create(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        `, SpriteKind.UFO)
+    animation.runImageAnimation(
+    ship,
+    assets.animation`UFO`,
+    200,
+    true
+    )
+}
 sprites.onDestroyed(SpriteKind.Enemy, function (sprite) {
     let tempAlign = new Align()
 tempAlign.spr = sprite;
@@ -166,19 +215,12 @@ for (let align of Alians) {
         game.splash("Wave " + Wave + " cleared!", "Get ready...")
         Wave += 1
         killAllEnemyProjectiles()
-        
-        PlaceAliens()
+        killAllPlayerProjectiles()
+        setNewWave()
     } else {
         music.play(music.melodyPlayable(music.bigCrash), music.PlaybackMode.InBackground)
     }
 })
-function setNewWave()
-{
-    if (Wave % 5 == 0)
-    {
-
-    }   
-}
 sprites.onDestroyed(SpriteKind.Projectile, function (sprite) {
     ProjectilesList.removeElement(sprite)
 })
@@ -204,8 +246,10 @@ sprite.destroy()
         Step += -0.1
     }
 })
+let bullet: Sprite = null
 let projectile22: Sprite = null
 let ChangeDirection = false
+let ship: Sprite = null
 let Canon: Sprite = null
 let explostion_original: Image = null
 let CanonImage: Image = null
@@ -236,6 +280,11 @@ let table2: HighScoreEntry[] = []
 let table: HighScoreEntry[] = []
 let bestScore = 0
 let Lives = 0
+let t = 0
+
+type Point = {x: number, y: number}
+
+
 info.setLifeImage(assets.image`Live`)
 interface HighScoreEntry {
     name: string
@@ -245,6 +294,7 @@ interface HighScoreEntry {
 Wave = 1
 enum GameStat {
     GameOn,
+    BezierAttack,
     Died,
     GameOver
 }
@@ -326,6 +376,36 @@ interface HighScoreEntry {
     wave: number
 }
 game.onUpdate(function () {
+    if (gamestat == GameStat.BezierAttack) {
+        if (t <= 1) {
+            let pos = alongBezierCurve(UFOCurve,t)
+            ship.setPosition(pos.x, pos.y)
+        } else {
+            ship.destroy()
+            Wave += 1
+            setNewWave()
+            t=0
+        }
+        t += 0.01
+    }
+})
+function alongBezierCurve (bezierArray: Point[],t: number) : Point
+{
+    if (bezierArray.length == 1)
+    {
+        return bezierArray[0]
+    }
+    let newBezierArray: Point[]
+    newBezierArray = []
+
+    for (let i=0; i<bezierArray.length-1; i++)
+    {
+        newBezierArray[i] = Pointlerp (bezierArray[i],bezierArray[i+1],t)
+    }
+    return alongBezierCurve(newBezierArray,t)
+
+}
+game.onUpdate(function () {
     if (gamestat == GameStat.GameOn) {
         for (let align2 of Alians) {
             if (align2.spr.flags != SpriteFlag.Ghost) {
@@ -343,7 +423,7 @@ game.onUpdate(function () {
             ChangeDirection = false
             for (let align3 of Alians) {
                 align3.spr.y += 2
-if (align3.spr.y > 80) {
+                    if (align3.spr.y > 80) {
                     music.stopAllSounds()
                     gameOver()
                 }
@@ -417,12 +497,27 @@ game.onUpdateInterval(500, function () {
     if (gamestat == GameStat.Died) {
         return
     }
-    if (--fireCounter == 0) {
-        fireCounter = countsToFire
-        selectedAlign = Math.round(selectedAlign = Math.random() * (Alians.length-1))
-        projectile22 = sprites.createProjectileFromSprite(assets.image`AlignFire`, Alians[selectedAlign].spr, 0, 50)
-        projectile22.setKind(SpriteKind.AlignProjectile)
-        alianProjectiles.push(projectile22)
-        music.play(music.createSoundEffect(WaveShape.Sine, 2517, 1, 244, 8, 513, SoundExpressionEffect.None, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
+    if (gamestat == GameStat.GameOn) {
+        if (--fireCounter == 0) {
+            fireCounter = countsToFire
+            selectedAlign = Math.round(selectedAlign = Math.random() * (Alians.length-1))
+            projectile22 = sprites.createProjectileFromSprite(assets.image`AlignFire`, Alians[selectedAlign].spr, 0, 50)
+            projectile22.setKind(SpriteKind.AlignProjectile)
+            alianProjectiles.push(projectile22)
+            music.play(music.createSoundEffect(WaveShape.Sine, 2517, 1, 244, 8, 513, SoundExpressionEffect.None, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
+        }
+    }
+})
+game.onUpdateInterval(300, function () {
+    if (gamestat == GameStat.BezierAttack) {
+        if (ship && ship.x > 0 && ship.x < 160) {
+            bullet = sprites.createProjectileFromSprite(img`
+                . 2 . 
+                2 2 2 
+                . 2 . 
+                `, ship, 0, 50)
+            bullet.setKind(SpriteKind.AlignProjectile)
+            music.play(music.melodyPlayable(music.magicWand), music.PlaybackMode.InBackground)
+        }
     }
 })

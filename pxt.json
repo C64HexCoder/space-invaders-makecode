@@ -1,5 +1,5 @@
 {
-    "name": "Space Invaders",
+    "name": "Space Invaders GOOD",
     "description": "",
     "dependencies": {
         "device": "*",
@@ -49,5 +49,5 @@
         "#91463d",
         "#000000"
     ],
-    "assetPack": false
+    "assetPack": true
 }
